@@ -8,15 +8,16 @@ function Players() {
   const [loading, setLoading] = useState(true)
 
   const fetchPlayers = async () => {
-    const res = await fetch('/api/players')
-    const data = await res.json()
-    setPlayers(data)
-    setLoading(false)
+    try {
+      const res = await fetch('/api/players')
+      const data = await res.json()
+      setPlayers(data)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  useEffect(() => {
-    fetchPlayers()
-  }, [])
+  useEffect(() => { fetchPlayers() }, [])
 
   const addPlayer = async (e) => {
     e.preventDefault()
@@ -34,33 +35,35 @@ function Players() {
     fetchPlayers()
   }
 
-  const handleChange = (field) => (e) => setForm({ ...form, [field]: e.target.value })
-
   return (
-    <div>
-      <form onSubmit={addPlayer} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-        <input placeholder="Player name" value={form.name} onChange={handleChange('name')} required />
-        <input placeholder="Team" value={form.team} onChange={handleChange('team')} required />
-        <input placeholder="Position" value={form.position} onChange={handleChange('position')} required />
-        <input placeholder="Rating" type="number" min="1" max="99" value={form.rating} onChange={handleChange('rating')} required />
-        <button type="submit">Add Player</button>
+    <div className="max-w-4xl mx-auto p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">FIFA Players Management</h1>
+      
+      {/* Form Section */}
+      <form onSubmit={addPlayer} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+        <input className="p-2 border rounded-md" placeholder="Name" value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required />
+        <input className="p-2 border rounded-md" placeholder="Team" value={form.team} onChange={(e) => setForm({...form, team: e.target.value})} required />
+        <input className="p-2 border rounded-md" placeholder="Pos" value={form.position} onChange={(e) => setForm({...form, position: e.target.value})} required />
+        <input className="p-2 border rounded-md" type="number" placeholder="Rating" value={form.rating} onChange={(e) => setForm({...form, rating: e.target.value})} required />
+        <button type="submit" className="bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Add Player</button>
       </form>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : players.length === 0 ? (
-        <p>No players yet. Add one above!</p>
-      ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {players.map((player) => (
-            <li key={player._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
-              <span>
-                <strong>{player.name}</strong> — {player.team} ({player.position}) ⭐ {player.rating}
-              </span>
-              <button onClick={() => deletePlayer(player._id)}>Delete</button>
-            </li>
+      {/* Players List */}
+      {loading ? <div className="text-center">Loading...</div> : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {players.map((p) => (
+            <div key={p._id} className="bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center hover:shadow-md transition">
+              <div>
+                <h3 className="font-bold text-lg">{p.name}</h3>
+                <p className="text-sm text-gray-500">{p.team} • {p.position}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-yellow-500 font-bold text-xl">★ {p.rating}</span>
+                <button onClick={() => deletePlayer(p._id)} className="text-red-500 hover:text-red-700 px-3 py-1 rounded">Delete</button>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )
